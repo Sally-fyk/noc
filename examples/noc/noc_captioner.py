@@ -1,4 +1,4 @@
-DEVICE_ID = 0
+DEVICE_ID = -1
 
 from collections import OrderedDict
 import argparse
@@ -11,11 +11,14 @@ import os
 import random
 import sys
 import pdb
+import extract_vgg_features
 
 sys.path.append('../../python/')
-import caffe
+caffe_root = '/home/sally/caffe/'
+os.chdir(caffe_root)
+sys.path.insert(0, caffe_root + 'python') 
 
-from extract_vgg_features import *
+import caffe
 
 # UNK_IDENTIFIER is the word used to identify unknown words
 UNK_IDENTIFIER = 'unk'
@@ -482,23 +485,24 @@ def load_weights_from_h5(net_object, h5_weights_file):
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("-m", "--modelname", type=str,
-                      default="models/imgnetcoco_3loss_voc72klabel_inglove_prelm75k_sgd_lr4e5_iter_80000.caffemodel.h5",
+                      default="/home/sally/noc/examples/noc/models/imgnetcoco_3loss_voc72klabel_inglove_prelm75k_sgd_lr4e5_iter_80000.caffemodel.h5",
                       help='Path to NOC model (Imagenet/CoCo).')
   parser.add_argument("-v", "--vggmodel", type=str,
-                      default="models/VGG_ILSVRC_16_layers.caffemodel",
+                      default="/home/sally/noc/examples/noc/models/VGG_ILSVRC_16_layers.caffemodel",
                       help='Path to vgg 16 model file.')
   parser.add_argument("-i", "--imagelist", type=str,
-                      default="images_list.txt",
+                      default="/home/sally/noc/examples/noc/images_list.txt",
                       help='File with a list of images (full path to images).')
   parser.add_argument("-o", "--htmlout", action='store_true', help='output images and captions as html')
   args = parser.parse_args()
 
-  VOCAB_FILE = './surf_intersect_glove.txt'
-  LSTM_NET_FILE = './deploy.3loss_coco_fc7_voc72klabel.shared_glove.prototxt'
-  VGG_NET_FILE = 'vgg_orig_16layer.deploy.prototxt'
-  RESULTS_DIR = './results'
+  VOCAB_FILE = '/home/sally/noc/examples/noc/surf_intersect_glove.txt'
+  LSTM_NET_FILE = '/home/sally/noc/examples/noc/deploy.3loss_coco_fc7_voc72klabel.shared_glove.prototxt'
+  VGG_NET_FILE = '/home/sally/noc/examples/noc/vgg_orig_16layer.deploy.prototxt'
+  RESULTS_DIR = '/home/sally/noc/examples/noc/results'
   MODEL_FILE = args.modelname
   NET_TAG = os.path.basename(args.modelname)
+  
 
   if DEVICE_ID >= 0:
     caffe.set_mode_gpu()
@@ -506,7 +510,7 @@ def main():
   else:
     caffe.set_mode_cpu()
   print "Setting up CNN..."
-  feature_extractor = FeatureExtractor(args.vggmodel, VGG_NET_FILE, DEVICE_ID)
+  feature_extractor = extract_vgg_features.FeatureExtractor(args.vggmodel, VGG_NET_FILE, DEVICE_ID)
   print "Setting up LSTM NET"
   lstm_net = caffe.Net(LSTM_NET_FILE, MODEL_FILE, caffe.TEST)
   if MODEL_FILE.endswith('.h5'):
@@ -525,8 +529,8 @@ def main():
 
   vocabulary, vocabulary_inverted = init_vocab_from_file(VOCAB_FILE)
   image_list = []
-  assert os.path.exists(args.imagelist)
-  with open(args.imagelist, 'r') as infd:
+  assert os.path.exists('/home/sally/noc/examples/noc/images_list.txt')
+  with open('/home/sally/noc/examples/noc/images_list.txt', 'r') as infd:
     image_list = infd.read().splitlines()
 
   print 'Captioning %d images...' % len(image_list)
@@ -567,4 +571,3 @@ def main():
 
 if __name__ == "__main__":
  main()
-
