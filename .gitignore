@@ -1,7 +1,7 @@
 ## General
 *
 !.gitignore
-! examples/noc/
+!/examples/noc/
 
 # Compiled Object files
 *.slo
