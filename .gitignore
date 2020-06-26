@@ -1,5 +1,6 @@
 ## General
 *
+!.gitignore
 ! examples/noc/
 
 # Compiled Object files
